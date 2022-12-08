@@ -9,20 +9,9 @@ using System.Runtime.InteropServices;
 using System.ComponentModel;
 using System.Text;
 
-// set attributes
-using System.Reflection;
-[assembly:AssemblyTitle("Command line tool to manage virtual desktops")]
-[assembly:AssemblyDescription("Command line tool to manage virtual desktops")]
-[assembly:AssemblyConfiguration("")]
-[assembly:AssemblyCompany("MS")]
-[assembly:AssemblyProduct("VirtualDesktop")]
-[assembly:AssemblyCopyright("© Markus Scholtes 2022")]
-[assembly:AssemblyTrademark("")]
-[assembly:AssemblyCulture("")]
-[assembly:AssemblyVersion("1.11.0.0")]
-[assembly:AssemblyFileVersion("1.11.0.0")]
-
 // Based on http://stackoverflow.com/a/32417530, Windows 10 SDK, github project Grabacr07/VirtualDesktop and own research
+
+namespace Windows10_1803 {
 
 namespace VirtualDesktop
 {
@@ -1985,4 +1974,6 @@ namespace VDeskTool
 		}
 
 	}
+}
+
 }
