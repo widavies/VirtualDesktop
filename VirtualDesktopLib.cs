@@ -29,6 +29,7 @@ namespace VirtualDesktop.VirtualDesktop {
 
     public interface VirtualDesktopWrapper {
         void JumpTo(int index);
+        int GetDesktop();
     }
 
     internal class VirtualDesktopWrapperWin11 : VirtualDesktopWrapper {
@@ -36,6 +37,16 @@ namespace VirtualDesktop.VirtualDesktop {
             if (index >= Desktop.Count) return;
 
             Desktop.FromIndex(index).MakeVisible();
+        }
+
+        public int GetDesktop() {
+            for (int i = 0; i < 10; i++) {
+                if (Desktop.FromIndex(i).IsVisible) {
+                    return i;
+                }
+            }
+
+            return 0;
         }
     }
 
@@ -45,6 +56,16 @@ namespace VirtualDesktop.VirtualDesktop {
 
             Windows11_21H2.VirtualDesktop.Desktop.FromIndex(index).MakeVisible();
         }
+        
+        public int GetDesktop() {
+            for (int i = 0; i < 10; i++) {
+                if (Windows11_21H2.VirtualDesktop.Desktop.FromIndex(i).IsVisible) {
+                    return i;
+                }
+            }
+
+            return 0;
+        }
     }
 
     internal class VirtualDesktopWrapperWin10_1809_21H2 : VirtualDesktopWrapper {
@@ -52,6 +73,16 @@ namespace VirtualDesktop.VirtualDesktop {
             if (index >= Windows10_1809_21H2.VirtualDesktop.Desktop.Count) return;
 
             Windows10_1809_21H2.VirtualDesktop.Desktop.FromIndex(index).MakeVisible();
+        }        
+        
+        public int GetDesktop() {
+            for (int i = 0; i < 10; i++) {
+                if (Windows10_1809_21H2.VirtualDesktop.Desktop.FromIndex(i).IsVisible) {
+                    return i;
+                }
+            }
+
+            return 0;
         }
     }
 
@@ -61,6 +92,16 @@ namespace VirtualDesktop.VirtualDesktop {
 
             Windows10_1803.VirtualDesktop.Desktop.FromIndex(index).MakeVisible();
         }
+        
+        public int GetDesktop() {
+            for (int i = 0; i < 10; i++) {
+                if (Windows10_1803.VirtualDesktop.Desktop.FromIndex(i).IsVisible) {
+                    return i;
+                }
+            }
+
+            return 0;
+        }
     }
 
     internal class VirtualDesktopWrapperWin10_1607_1709 : VirtualDesktopWrapper {
@@ -68,6 +109,16 @@ namespace VirtualDesktop.VirtualDesktop {
             if (index >= Windows10_1607_1709.VirtualDesktop.Desktop.Count) return;
             
             Windows10_1607_1709.VirtualDesktop.Desktop.FromIndex(index).MakeVisible();
+        }
+        
+        public int GetDesktop() {
+            for (int i = 0; i < 10; i++) {
+                if ( Windows10_1607_1709.VirtualDesktop.Desktop.FromIndex(i).IsVisible) {
+                    return i;
+                }
+            }
+
+            return 0;
         }
     }
 }
