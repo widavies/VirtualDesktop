@@ -1,8 +1,8 @@
 // Author: Markus Scholtes, 2023
 // Version 1.12, 2023-03-10
-// Version for Windows 11 21H2
+// Version for Windows 11 Insider 25276+
 // Compile with:
-// C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe VirtualDesktop11.cs
+// C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe VirtualDesktopInsider.cs
 
 using System;
 using System.Runtime.InteropServices;
@@ -10,8 +10,6 @@ using System.ComponentModel;
 using System.Text;
 
 // Based on http://stackoverflow.com/a/32417530, Windows 10 SDK, github project Grabacr07/VirtualDesktop and own research
-
-namespace Windows11_21H2 {
 
 namespace VirtualDesktop
 {
@@ -149,17 +147,19 @@ namespace VirtualDesktop
 
 	[ComImport]
 	[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-	[Guid("B2F925B9-5A0F-4D2E-9F4D-2B1507593C10")]
+	[Guid("88846798-1611-4D18-946B-4A67BFF58C1B")]
 	internal interface IVirtualDesktopManagerInternal
 	{
 		int GetCount(IntPtr hWndOrMon);
 		void MoveViewToDesktop(IApplicationView view, IVirtualDesktop desktop);
 		bool CanViewMoveDesktops(IApplicationView view);
 		IVirtualDesktop GetCurrentDesktop(IntPtr hWndOrMon);
+		IObjectArray GetAllCurrentDesktops();
 		void GetDesktops(IntPtr hWndOrMon, out IObjectArray desktops);
 		[PreserveSig]
 		int GetAdjacentDesktop(IVirtualDesktop from, int direction, out IVirtualDesktop desktop);
 		void SwitchDesktop(IntPtr hWndOrMon, IVirtualDesktop desktop);
+		void SwitchDesktopAndMoveForegroundView(IntPtr hWndOrMon, IVirtualDesktop desktop);
 		IVirtualDesktop CreateDesktop(IntPtr hWndOrMon);
 		void MoveDesktop(IVirtualDesktop desktop, IntPtr hWndOrMon, int nIndex);
 		void RemoveDesktop(IVirtualDesktop desktop, IVirtualDesktop fallback);
@@ -2526,6 +2526,4 @@ namespace VDeskTool
 		}
 
 	}
-}
-
 }

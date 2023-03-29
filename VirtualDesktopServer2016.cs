@@ -1,8 +1,8 @@
 // Author: Markus Scholtes, 2023
 // Version 1.12, 2023-03-10
-// Version for Windows 11 21H2
+// Version for Windows 10 1607 to 1709 or Windows Server 2016
 // Compile with:
-// C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe VirtualDesktop11.cs
+// C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe VirtualDesktop1607.cs
 
 using System;
 using System.Runtime.InteropServices;
@@ -11,7 +11,7 @@ using System.Text;
 
 // Based on http://stackoverflow.com/a/32417530, Windows 10 SDK, github project Grabacr07/VirtualDesktop and own research
 
-namespace Windows11_21H2 {
+namespace Windows10_1607_1709 {
 
 namespace VirtualDesktop
 {
@@ -57,8 +57,8 @@ namespace VirtualDesktop
 	}
 
 	[ComImport]
-	[InterfaceType(ComInterfaceType.InterfaceIsIInspectable)]
-	[Guid("372E1D3B-38D3-42E4-A15B-8AB2B178F513")]
+	[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	[Guid("9AC0B5C8-1484-4C5B-9533-4134A0F97CEA")]
 	internal interface IApplicationView
 	{
 		int SetFocus();
@@ -88,9 +88,12 @@ namespace VirtualDesktop
 		int CanReceiveInput(out bool canReceiveInput);
 		int GetCompatibilityPolicyType(out APPLICATION_VIEW_COMPATIBILITY_POLICY flags);
 		int SetCompatibilityPolicyType(APPLICATION_VIEW_COMPATIBILITY_POLICY flags);
+		int GetPositionPriority(out IntPtr /* IShellPositionerPriority** */ priority);
+		int SetPositionPriority(IntPtr /* IShellPositionerPriority* */ priority);
 		int GetSizeConstraints(IntPtr /* IImmersiveMonitor* */ monitor, out Size size1, out Size size2);
 		int GetSizeConstraintsForDpi(uint uint1, out Size size1, out Size size2);
 		int SetSizeConstraintsForDpi(ref uint uint1, ref Size size1, ref Size size2);
+		int QuerySizeConstraintsFromApp();
 		int OnMinSizePreferencesUpdated(IntPtr hwnd);
 		int ApplyOperation(IntPtr /* IApplicationViewOperation* */ operation);
 		int IsTray(out bool isTray);
@@ -101,23 +104,11 @@ namespace VirtualDesktop
 		int EnumerateOwnershipTree(out IObjectArray ownershipTree);
 		int GetEnterpriseId([MarshalAs(UnmanagedType.LPWStr)] out string enterpriseId);
 		int IsMirrored(out bool isMirrored);
-		int Unknown1(out int unknown);
-		int Unknown2(out int unknown);
-		int Unknown3(out int unknown);
-		int Unknown4(out int unknown);
-		int Unknown5(out int unknown);
-		int Unknown6(int unknown);
-		int Unknown7();
-		int Unknown8(out int unknown);
-		int Unknown9(int unknown);
-		int Unknown10(int unknownX, int unknownY);
-		int Unknown11(int unknown);
-		int Unknown12(out Size size1);
 	}
 
 	[ComImport]
 	[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-	[Guid("1841C6D7-4F9D-42C0-AF41-8747538F10E5")]
+	[Guid("2C08ADF0-A386-4B35-9250-0FE183476FCC")]
 	internal interface IApplicationViewCollection
 	{
 		int GetViews(out IObjectArray array);
@@ -127,50 +118,37 @@ namespace VirtualDesktop
 		int GetViewForApplication(object application, out IApplicationView view);
 		int GetViewForAppUserModelId(string id, out IApplicationView view);
 		int GetViewInFocus(out IntPtr view);
-		int Unknown1(out IntPtr view);
 		void RefreshCollection();
 		int RegisterForApplicationViewChanges(object listener, out int cookie);
+		int RegisterForApplicationViewPositionChanges(object listener, out int cookie);
 		int UnregisterForApplicationViewChanges(int cookie);
 	}
 
 	[ComImport]
 	[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-	[Guid("536D3495-B208-4CC9-AE26-DE8111275BF8")]
+	[Guid("FF72FFDD-BE7E-43FC-9C03-AD81681E88E4")]
 	internal interface IVirtualDesktop
 	{
 		bool IsViewVisible(IApplicationView view);
 		Guid GetId();
-		IntPtr Unknown1();
-		[return: MarshalAs(UnmanagedType.HString)]
-		string GetName();
-		[return: MarshalAs(UnmanagedType.HString)]
-		string GetWallpaperPath();
 	}
 
 	[ComImport]
 	[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-	[Guid("B2F925B9-5A0F-4D2E-9F4D-2B1507593C10")]
+	[Guid("F31574D6-B682-4CDC-BD56-1827860ABEC6")]
 	internal interface IVirtualDesktopManagerInternal
 	{
-		int GetCount(IntPtr hWndOrMon);
+		int GetCount();
 		void MoveViewToDesktop(IApplicationView view, IVirtualDesktop desktop);
 		bool CanViewMoveDesktops(IApplicationView view);
-		IVirtualDesktop GetCurrentDesktop(IntPtr hWndOrMon);
-		void GetDesktops(IntPtr hWndOrMon, out IObjectArray desktops);
+		IVirtualDesktop GetCurrentDesktop();
+		void GetDesktops(out IObjectArray desktops);
 		[PreserveSig]
 		int GetAdjacentDesktop(IVirtualDesktop from, int direction, out IVirtualDesktop desktop);
-		void SwitchDesktop(IntPtr hWndOrMon, IVirtualDesktop desktop);
-		IVirtualDesktop CreateDesktop(IntPtr hWndOrMon);
-		void MoveDesktop(IVirtualDesktop desktop, IntPtr hWndOrMon, int nIndex);
+		void SwitchDesktop(IVirtualDesktop desktop);
+		IVirtualDesktop CreateDesktop();
 		void RemoveDesktop(IVirtualDesktop desktop, IVirtualDesktop fallback);
 		IVirtualDesktop FindDesktop(ref Guid desktopid);
-		void GetDesktopSwitchIncludeExcludeViews(IVirtualDesktop desktop, out IObjectArray unknown1, out IObjectArray unknown2);
-		void SetDesktopName(IVirtualDesktop desktop, [MarshalAs(UnmanagedType.HString)] string name);
-		void SetDesktopWallpaper(IVirtualDesktop desktop, [MarshalAs(UnmanagedType.HString)] string path);
-		void UpdateWallpaperPathForAllDesktops([MarshalAs(UnmanagedType.HString)] string path);
-		void CopyDesktopState(IApplicationView pView0, IApplicationView pView1);
-		int GetDesktopIsPerMonitor();
-		void SetDesktopIsPerMonitor(bool state);
 	}
 
 	[ComImport]
@@ -234,10 +212,10 @@ namespace VirtualDesktop
 
 		internal static IVirtualDesktop GetDesktop(int index)
 		{	// get desktop with index
-			int count = VirtualDesktopManagerInternal.GetCount(IntPtr.Zero);
+			int count = VirtualDesktopManagerInternal.GetCount();
 			if (index < 0 || index >= count) throw new ArgumentOutOfRangeException("index");
 			IObjectArray desktops;
-			VirtualDesktopManagerInternal.GetDesktops(IntPtr.Zero, out desktops);
+			VirtualDesktopManagerInternal.GetDesktops(out desktops);
 			object objdesktop;
 			desktops.GetAt(index, typeof(IVirtualDesktop).GUID, out objdesktop);
 			Marshal.ReleaseComObject(desktops);
@@ -249,9 +227,9 @@ namespace VirtualDesktop
 			int index = -1;
 			Guid IdSearch = desktop.GetId();
 			IObjectArray desktops;
-			VirtualDesktopManagerInternal.GetDesktops(IntPtr.Zero, out desktops);
+			VirtualDesktopManagerInternal.GetDesktops(out desktops);
 			object objdesktop;
-			for (int i = 0; i < VirtualDesktopManagerInternal.GetCount(IntPtr.Zero); i++)
+			for (int i = 0; i < VirtualDesktopManagerInternal.GetCount(); i++)
 			{
 				desktops.GetAt(i, typeof(IVirtualDesktop).GUID, out objdesktop);
 				if (IdSearch.CompareTo(((IVirtualDesktop)objdesktop).GetId()) == 0)
@@ -309,12 +287,12 @@ namespace VirtualDesktop
 
 		public static int Count
 		{ // return the number of desktops
-			get { return DesktopManager.VirtualDesktopManagerInternal.GetCount(IntPtr.Zero); }
+			get { return DesktopManager.VirtualDesktopManagerInternal.GetCount(); }
 		}
 
 		public static Desktop Current
 		{ // returns current desktop
-			get { return new Desktop(DesktopManager.VirtualDesktopManagerInternal.GetCurrentDesktop(IntPtr.Zero)); }
+			get { return new Desktop(DesktopManager.VirtualDesktopManagerInternal.GetCurrentDesktop()); }
 		}
 
 		public static Desktop FromIndex(int index)
@@ -327,7 +305,7 @@ namespace VirtualDesktop
 			if (hWnd == IntPtr.Zero) throw new ArgumentNullException();
 			Guid id = DesktopManager.VirtualDesktopManager.GetWindowDesktopId(hWnd);
 			if ((id.CompareTo(AppOnAllDesktops) == 0) || (id.CompareTo(WindowOnAllDesktops) == 0))
-				return new Desktop(DesktopManager.VirtualDesktopManagerInternal.GetCurrentDesktop(IntPtr.Zero));
+				return new Desktop(DesktopManager.VirtualDesktopManagerInternal.GetCurrentDesktop());
 			else
 				return new Desktop(DesktopManager.VirtualDesktopManagerInternal.FindDesktop(ref id));
 		}
@@ -339,11 +317,12 @@ namespace VirtualDesktop
 
 		public static string DesktopNameFromDesktop(Desktop desktop)
 		{ // return name of desktop or "Desktop n" if it has no name
+			Guid guid = desktop.ivd.GetId();
 
-			// get desktop name
+			// read desktop name in registry
 			string desktopName = null;
 			try {
-				desktopName = desktop.ivd.GetName();
+				desktopName = (string)Microsoft.Win32.Registry.GetValue("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops\\Desktops\\{" + guid.ToString() + "}", "Name", null);
 			}
 			catch { }
 
@@ -357,11 +336,12 @@ namespace VirtualDesktop
 
 		public static string DesktopNameFromIndex(int index)
 		{ // return name of desktop from index (-> index = 0..Count-1) or "Desktop n" if it has no name
+			Guid guid = DesktopManager.GetDesktop(index).GetId();
 
-			// get desktop name
+			// read desktop name in registry
 			string desktopName = null;
 			try {
-				desktopName = DesktopManager.GetDesktop(index).GetName();
+				desktopName = (string)Microsoft.Win32.Registry.GetValue("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops\\Desktops\\{" + guid.ToString() + "}", "Name", null);
 			}
 			catch { }
 
@@ -373,41 +353,11 @@ namespace VirtualDesktop
 			return desktopName;
 		}
 
-		public static bool HasDesktopNameFromIndex(int index)
-		{ // return true is desktop is named or false if it has no name
-
-			// read desktop name in registry
-			string desktopName = null;
-			try {
-				desktopName = DesktopManager.GetDesktop(index).GetName();
-			}
-			catch { }
-
-			// name found?
-			if (string.IsNullOrEmpty(desktopName))
-				return false;
-			else
-				return true;
-		}
-
-		public static string DesktopWallpaperFromIndex(int index)
-		{ // return name of desktop wallpaper from index (-> index = 0..Count-1)
-
-			// get desktop name
-			string desktopwppath = "";
-			try {
-				desktopwppath = DesktopManager.GetDesktop(index).GetWallpaperPath();
-			}
-			catch { }
-
-			return desktopwppath;
-		}
-
 		public static int SearchDesktop(string partialName)
 		{ // get index of desktop with partial name, return -1 if no desktop found
 			int index = -1;
 
-			for (int i = 0; i < DesktopManager.VirtualDesktopManagerInternal.GetCount(IntPtr.Zero); i++)
+			for (int i = 0; i < DesktopManager.VirtualDesktopManagerInternal.GetCount(); i++)
 			{ // loop through all virtual desktops and compare partial name to desktop name
 				if (DesktopNameFromIndex(i).ToUpper().IndexOf(partialName.ToUpper()) >= 0)
 				{ index = i;
@@ -420,7 +370,7 @@ namespace VirtualDesktop
 
 		public static Desktop Create()
 		{ // create a new desktop
-			return new Desktop(DesktopManager.VirtualDesktopManagerInternal.CreateDesktop(IntPtr.Zero));
+			return new Desktop(DesktopManager.VirtualDesktopManagerInternal.CreateDesktop());
 		}
 
 		public void Remove(Desktop fallback = null)
@@ -445,41 +395,14 @@ namespace VirtualDesktop
 			DesktopManager.VirtualDesktopManagerInternal.RemoveDesktop(ivd, fallbackdesktop);
 		}
 
-		public static void RemoveAll()
-		{ // remove all desktops but visible
-			DesktopManager.VirtualDesktopManagerInternal.SetDesktopIsPerMonitor(true);
-		}
-
-		public void Move(int index)
-		{ // move current desktop to desktop in index (-> index = 0..Count-1)
-			DesktopManager.VirtualDesktopManagerInternal.MoveDesktop(ivd, IntPtr.Zero, index);
-		}
-
-		public void SetName(string Name)
-		{ // set name for desktop, empty string removes name
-			DesktopManager.VirtualDesktopManagerInternal.SetDesktopName(this.ivd, Name);
-		}
-
-		public void SetWallpaperPath(string Path)
-		{ // set path for wallpaper, empty string removes path
-			if (string.IsNullOrEmpty(Path)) throw new ArgumentNullException();
-			DesktopManager.VirtualDesktopManagerInternal.SetDesktopWallpaper(this.ivd, Path);
-		}
-
-		public static void SetAllWallpaperPaths(string Path)
-		{ // set wallpaper path for all desktops
-			if (string.IsNullOrEmpty(Path)) throw new ArgumentNullException();
-			DesktopManager.VirtualDesktopManagerInternal.UpdateWallpaperPathForAllDesktops(Path);
-		}
-
 		public bool IsVisible
 		{ // return true if this desktop is the current displayed one
-			get { return object.ReferenceEquals(ivd, DesktopManager.VirtualDesktopManagerInternal.GetCurrentDesktop(IntPtr.Zero)); }
+			get { return object.ReferenceEquals(ivd, DesktopManager.VirtualDesktopManagerInternal.GetCurrentDesktop()); }
 		}
 
 		public void MakeVisible()
 		{ // make this desktop visible
-			DesktopManager.VirtualDesktopManagerInternal.SwitchDesktop(IntPtr.Zero, ivd);
+			DesktopManager.VirtualDesktopManagerInternal.SwitchDesktop(ivd);
 		}
 
 		public Desktop Left
@@ -706,13 +629,9 @@ namespace VDeskTool
 								for (int i = 0; i < desktopCount; i++)
 								{
 									if (i != visibleDesktop)
-										Console.Write(VirtualDesktop.Desktop.DesktopNameFromIndex(i));
+										Console.WriteLine(VirtualDesktop.Desktop.DesktopNameFromIndex(i));
 									else
-										Console.Write(VirtualDesktop.Desktop.DesktopNameFromIndex(i) + " (visible)");
-									if (string.IsNullOrEmpty(VirtualDesktop.Desktop.DesktopWallpaperFromIndex(i)))
-										Console.WriteLine();
-									else
-										Console.WriteLine(" (Wallpaper: " + VirtualDesktop.Desktop.DesktopWallpaperFromIndex(i) + ")");
+										Console.WriteLine(VirtualDesktop.Desktop.DesktopNameFromIndex(i) + " (visible)");
 								}
 								if (verbose) Console.WriteLine("\nCount of desktops: " + desktopCount);
 								break;
@@ -810,20 +729,6 @@ namespace VDeskTool
 								}
 								break;
 
-							case "NAME": // removing name of desktop in rc
-							case "NA":
-									try
-									{ // remove desktop name
-										VirtualDesktop.Desktop.FromIndex(rc).SetName("");
-										if (verbose) Console.WriteLine("Removed name of desktop number " + rc.ToString());
-									}
-									catch
-									{ // error while removing name
-										if (verbose) Console.WriteLine("Error removing desktop name");
-										rc = -1;
-									}
-								break;
-
 							case "REMOVE": // remove desktop in rc
 							case "R":
 								if (verbose)
@@ -838,19 +743,6 @@ namespace VDeskTool
 								catch
 								{ // error while removing
 									Console.WriteLine();
-									rc = -1;
-								}
-								break;
-
-							case "REMOVEALL": // remove all virtual desktops but visible
-							case "RA":
-								Console.WriteLine("Removing all virtual desktops but visible");
-								try
-								{ // remove all virtual desktops but visible
-									VirtualDesktop.Desktop.RemoveAll();
-								}
-								catch
-								{ // error while removing
 									rc = -1;
 								}
 								break;
@@ -1019,48 +911,6 @@ namespace VDeskTool
 										}
 									}
 								}
-								break;
-
-							case "NAME": // set name of desktop in rc
-							case "NA":
-									try
-									{ // set desktop name
-										VirtualDesktop.Desktop.FromIndex(rc).SetName(groups[2].Value);
-										if (verbose) Console.WriteLine("Set name of desktop number " + rc.ToString() + " to '" + VirtualDesktop.Desktop.DesktopNameFromIndex(rc) + "'");
-									}
-									catch
-									{ // error while setting name
-										if (verbose) Console.WriteLine("Error setting desktop name to '" + groups[2].Value + "'");
-										rc = -1;
-									}
-								break;
-
-							case "WALLPAPER": // set path of wallpaper to desktop in rc
-							case "WP":
-									try
-									{ // set wallpaper path
-										VirtualDesktop.Desktop.FromIndex(rc).SetWallpaperPath(groups[2].Value);
-										if (verbose) Console.WriteLine("Set wallpaper of desktop number " + rc.ToString() + " to '" + VirtualDesktop.Desktop.DesktopWallpaperFromIndex(rc) + "'");
-									}
-									catch
-									{ // error while setting name
-										if (verbose) Console.WriteLine("Error setting wallpaper to '" + groups[2].Value + "'");
-										rc = -1;
-									}
-								break;
-
-							case "ALLWALLPAPERS": // set wallpaper path of all desktops
-							case "AWP":
-									try
-									{ // set wallpaper path of all desktops
-										VirtualDesktop.Desktop.SetAllWallpaperPaths(groups[2].Value);
-										if (verbose) Console.WriteLine("Set wallpaper path of all desktops to '" + groups[2].Value + "'");
-									}
-									catch
-									{ // error while setting name
-										if (verbose) Console.WriteLine("Error setting wallpaper path of all desktops to '" + groups[2].Value + "'");
-										rc = -1;
-									}
 								break;
 
 							case "SWITCH": // switch to desktop
@@ -1262,16 +1112,16 @@ namespace VDeskTool
 								}
 								break;
 
-							case "MOVEDESKTOP": // move desktop
-							case "MD":
+							case "INSERTDESKTOP": // insert desktop
+							case "ID":
 								if (int.TryParse(groups[2].Value, out iParam))
 								{ // parameter is an integer, use as desktop number
 									if ((iParam >= 0) && (iParam < VirtualDesktop.Desktop.Count) && (rc != iParam))
-									{ // check if parameter in range of active desktops
-										if (verbose) Console.WriteLine("Moving virtual desktop number " + rc.ToString() + " (desktop '" + VirtualDesktop.Desktop.DesktopNameFromIndex(rc) + "') to desktop number " + iParam.ToString() + " (desktop '" + VirtualDesktop.Desktop.DesktopNameFromIndex(iParam) + "')");
+									{ // check if parameter is in range of active desktops
+										if (verbose) Console.WriteLine("Inserting virtual desktop number " + iParam.ToString() + " (desktop '" + VirtualDesktop.Desktop.DesktopNameFromIndex(iParam) + "') before desktop number " + rc.ToString() + " (desktop '" + VirtualDesktop.Desktop.DesktopNameFromIndex(rc) + "') or vice versa");
 										try
-										{ // move virtual desktop index rc to index iParam
-											VirtualDesktop.Desktop.FromIndex(rc).Move(iParam);
+										{ // insert virtual desktop iParam before rc
+											InsertDesktop(rc, iParam);
 											rc = iParam;
 										}
 										catch
@@ -1287,10 +1137,10 @@ namespace VDeskTool
 									iParam = VirtualDesktop.Desktop.SearchDesktop(groups[2].Value);
 									if ((iParam >= 0) && (rc != iParam))
 									{ // desktop found
-										if (verbose) Console.WriteLine("Moving virtual desktop number " + rc.ToString() + " (desktop '" + VirtualDesktop.Desktop.DesktopNameFromIndex(rc) + "') to desktop number " + iParam.ToString() + " (desktop '" + VirtualDesktop.Desktop.DesktopNameFromIndex(iParam) + "')");
+										if (verbose) Console.WriteLine("Inserting virtual desktop number " + iParam.ToString() + " (desktop '" + VirtualDesktop.Desktop.DesktopNameFromIndex(iParam) + "') before desktop number " + rc.ToString() + " (desktop '" + VirtualDesktop.Desktop.DesktopNameFromIndex(rc) + "') or vice versa");
 										try
-										{ // move virtual desktop index rc to index iParam
-											VirtualDesktop.Desktop.FromIndex(rc).Move(iParam);
+										{ // insert virtual desktop iParam before rc
+											InsertDesktop(rc, iParam);
 											rc = iParam;
 										}
 										catch
@@ -1312,19 +1162,19 @@ namespace VDeskTool
 												iParam = VirtualDesktop.Desktop.Count-1;
 												if (rc == iParam)
 												{
-													if (verbose) Console.WriteLine("Cannot move virtual desktop to itself");
+													if (verbose) Console.WriteLine("Cannot insert virtual desktop before itself");
 													rc = -2;
 												}
 												else
 												{
-													if (verbose) Console.WriteLine("Moving virtual desktop number " + iParam.ToString() + " (desktop '" + VirtualDesktop.Desktop.DesktopNameFromIndex(iParam) + "') before desktop number " + rc.ToString() + " (desktop '" + VirtualDesktop.Desktop.DesktopNameFromIndex(rc) + "')");
+													if (verbose) Console.WriteLine("Inserting virtual desktop number " + iParam.ToString() + " (desktop '" + VirtualDesktop.Desktop.DesktopNameFromIndex(iParam) + "') before desktop number " + rc.ToString() + " (desktop '" + VirtualDesktop.Desktop.DesktopNameFromIndex(rc) + "') or vice versa");
 													try
-													{ // move virtual desktop index rc to index iParam
-														VirtualDesktop.Desktop.FromIndex(rc).Move(iParam);
+													{ // insert virtual desktop iParam before rc
+														InsertDesktop(rc, iParam);
 														rc = iParam;
 													}
 													catch
-													{ // error while moving
+													{ // error while inserting
 														rc = -1;
 													}
 												}
@@ -2408,23 +2258,55 @@ namespace VDeskTool
 			EnumDelegate enumfunc = new EnumDelegate(EnumWindowsProcToSwap);
 
 			EnumDesktopWindows(IntPtr.Zero, enumfunc, IntPtr.Zero);
+		}
 
-			string desktopname1 = "";
-			if (VirtualDesktop.Desktop.HasDesktopNameFromIndex(iSwapDesktop1))
-				desktopname1 = VirtualDesktop.Desktop.DesktopNameFromIndex(iSwapDesktop1);
-			string desktopname2 = "";
-			if (VirtualDesktop.Desktop.HasDesktopNameFromIndex(iSwapDesktop2))
-				desktopname2 = VirtualDesktop.Desktop.DesktopNameFromIndex(iSwapDesktop2);
+		private static int iInsertDesktop1;
+		private static int iInsertDesktop2;
 
-			VirtualDesktop.Desktop.FromIndex(iSwapDesktop1).SetName(desktopname2);
-			VirtualDesktop.Desktop.FromIndex(iSwapDesktop2).SetName(desktopname1);
+		private static bool EnumWindowsProcToInsert(IntPtr hWnd, int lParam)
+		{
+			StringBuilder windowText = new StringBuilder(MAXTITLE);
+			int titleLength = GetWindowText(hWnd, windowText, windowText.Capacity + 1);
+			windowText.Length = titleLength;
+			string title = windowText.ToString();
+
+			if (!string.IsNullOrEmpty(title) && IsWindowVisible(hWnd))
+			{
+				try {
+					int iDesktopIndex = VirtualDesktop.Desktop.FromDesktop(VirtualDesktop.Desktop.FromWindow(hWnd));
+					if ((iDesktopIndex >= iInsertDesktop1) && (iDesktopIndex < iInsertDesktop2))
+						VirtualDesktop.Desktop.FromIndex(iDesktopIndex + 1).MoveWindow(hWnd);
+
+					if (iDesktopIndex == iInsertDesktop2) VirtualDesktop.Desktop.FromIndex(iInsertDesktop1).MoveWindow(hWnd);
+				}
+				catch { }
+			}
+
+			return true;
+		}
+
+		private static void InsertDesktop(int InsertIndex1, int InsertIndex2)
+		{
+			if (InsertIndex2 > InsertIndex1)
+			{
+				iInsertDesktop1 = InsertIndex1;
+				iInsertDesktop2 = InsertIndex2;
+			}
+			else
+			{
+				iInsertDesktop1 = InsertIndex2;
+				iInsertDesktop2 = InsertIndex1;
+			}
+			EnumDelegate enumfunc = new EnumDelegate(EnumWindowsProcToInsert);
+
+			EnumDesktopWindows(IntPtr.Zero, enumfunc, IntPtr.Zero);
 		}
 
 		static void HelpScreen()
 		{
 			Console.WriteLine("VirtualDesktop.exe\t\t\t\tMarkus Scholtes, 2023, v1.12\n");
 
-			Console.WriteLine("Command line tool to manage the virtual desktops of Windows 11.");
+			Console.WriteLine("Command line tool to manage the virtual desktops of Windows Server 2016.");
 			Console.WriteLine("Parameters can be given as a sequence of commands. The result - most of the");
 			Console.WriteLine("times the number of the processed desktop - can be used as input for the next");
 			Console.WriteLine("parameter. The result of the last command is returned as error level.");
@@ -2438,10 +2320,6 @@ namespace VDeskTool
 			Console.WriteLine("/GetDesktop:<n|s> get number of virtual desktop <n> or desktop with text <s> in");
 			Console.WriteLine("                   name to pipeline (short: /gd).");
 			Console.WriteLine("/GetCurrentDesktop  get number of current desktop to pipeline (short: /gcd).");
-			Console.WriteLine("/Name[:<s>]      set name of desktop with number in pipeline (short: /na).");
-			Console.WriteLine("/Wallpaper[:<s>] set wallpaper path of desktop with number in pipeline (short:");
-			Console.WriteLine("                   /wp).");
-			Console.WriteLine("/AllWallpapers:<s> set wallpaper path of all desktops (short: /awp).");
 			Console.WriteLine("/IsVisible[:<n|s>] is desktop number <n>, desktop with text <s> in name or with");
 			Console.WriteLine("                   number in pipeline visible (short: /iv)? Returns 0 for");
 			Console.WriteLine("                   visible and 1 for invisible.");
@@ -2456,11 +2334,10 @@ namespace VDeskTool
 			Console.WriteLine("/New             create new desktop (short: /n). Number is stored in pipeline.");
 			Console.WriteLine("/Remove[:<n|s>]  remove desktop number <n>, desktop with text <s> in name or");
 			Console.WriteLine("                   desktop with number in pipeline (short: /r).");
-			Console.WriteLine("/RemoveAll       remove all desktops but visible (short: /ra).");
 			Console.WriteLine("/SwapDesktop:<n|s>  swap desktop in pipeline with desktop number <n> or desktop");
 			Console.WriteLine("                   with text <s> in name (short: /sd).");
-			Console.WriteLine("/MoveDesktop:<n|s>  move desktop in pipeline to desktop number <n> or desktop");
-			Console.WriteLine("                   with text <s> in name (short: /md).");
+			Console.WriteLine("/InsertDesktop:<n|s>  insert desktop number <n> or desktop with text <s> in");
+			Console.WriteLine("                   name before desktop in pipeline or vice versa (short: /id).");
 			Console.WriteLine("/MoveWindowsToDesktop:<n|s>  move windows on desktop in pipeline to desktop");
 			Console.WriteLine("                   number <n> or desktop with text <s> in name (short: /mwtd).");
 			Console.WriteLine("/MoveWindow:<s|n>  move process with name <s> or id <n> to desktop with number");
