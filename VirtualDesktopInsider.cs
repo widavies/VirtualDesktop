@@ -11,6 +11,8 @@ using System.Text;
 
 // Based on http://stackoverflow.com/a/32417530, Windows 10 SDK, github project Grabacr07/VirtualDesktop and own research
 
+namespace Windows11_Insider {
+
 namespace VirtualDesktop
 {
 	#region COM API
@@ -2526,4 +2528,6 @@ namespace VDeskTool
 		}
 
 	}
+}
+
 }
